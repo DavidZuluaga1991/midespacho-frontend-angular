@@ -12,6 +12,16 @@ export interface CaseResponseDto {
   updatedAt: string;
 }
 
+export interface ListCasesResponseDto {
+  data: CaseResponseDto[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    hasNext: boolean;
+  };
+}
+
 export interface CaseFileResponseDto {
   id: string;
   caseId: string;
@@ -50,4 +60,3 @@ export interface UploadCaseFilesResponseDto {
   batch: FileBatchResponseDto;
   files: CaseFileResponseDto[];
 }
-

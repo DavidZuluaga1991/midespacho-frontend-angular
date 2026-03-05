@@ -15,7 +15,6 @@ import { FilesListComponent } from '../../components/files-list/files-list.compo
 
 @Component({
   selector: 'app-case-detail-page',
-  standalone: true,
   imports: [CommonModule, RouterLink, CaseHeaderComponent, UploadBatchFormComponent, FilesListComponent],
   templateUrl: './case-detail.page.html',
   styleUrl: './case-detail.page.scss',

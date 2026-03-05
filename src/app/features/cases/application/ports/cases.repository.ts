@@ -11,6 +11,22 @@ export interface ListCaseFilesParams {
   search?: string;
 }
 
+export interface ListCasesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface ListCasesResult {
+  data: CaseModel[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    hasNext: boolean;
+  };
+}
+
 export interface ListCaseFilesResult {
   data: CaseFileModel[];
   meta: {
@@ -34,8 +50,8 @@ export interface UploadCaseFilesResult {
 }
 
 export abstract class CasesRepository {
+  abstract listCases(params: ListCasesParams): Observable<ListCasesResult>;
   abstract getCaseById(caseId: string): Observable<CaseModel>;
   abstract listCaseFiles(params: ListCaseFilesParams): Observable<ListCaseFilesResult>;
   abstract uploadCaseFiles(command: UploadCaseFilesCommand): Observable<UploadCaseFilesResult>;
 }
-

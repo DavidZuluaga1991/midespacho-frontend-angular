@@ -87,6 +87,9 @@ Flujo esperado:
 3. Usuario sube lote de archivos.
 4. Al exito, refresca listado automaticamente.
 
+Caso demo sugerido (despues de correr `npm.cmd run seed:demo` en backend):
+- `/app/cases/b8e5a63e-f8d3-427f-8f59-1f30fce8d001`
+
 ## Calidad y pruebas
 ```powershell
 # build SSR

@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import {
   CasesRepository,
+  ListCasesParams,
+  ListCasesResult,
   ListCaseFilesParams,
   ListCaseFilesResult,
   UploadCaseFilesCommand,
@@ -10,7 +12,7 @@ import {
 } from '../../application/ports/cases.repository';
 import { CaseModel } from '../../domain/models/case.model';
 import { API_BASE_URL } from '../../../../core/config/api-base-url.token';
-import { CaseResponseDto, ListCaseFilesResponseDto, UploadCaseFilesResponseDto } from '../dto/cases-api.dto';
+import { CaseResponseDto, ListCaseFilesResponseDto, ListCasesResponseDto, UploadCaseFilesResponseDto } from '../dto/cases-api.dto';
 import { mapCaseDtoToModel, mapCaseFileDtoToModel, mapFileBatchDtoToModel } from '../mappers/cases.mapper';
 
 const joinUrl = (base: string, path: string): string => `${base.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
@@ -19,6 +21,28 @@ const joinUrl = (base: string, path: string): string => `${base.replace(/\/+$/, 
 export class CasesHttpRepository implements CasesRepository {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+
+  listCases(params: ListCasesParams): Observable<ListCasesResult> {
+    let httpParams = new HttpParams();
+    if (params.page) {
+      httpParams = httpParams.set('page', params.page);
+    }
+    if (params.limit) {
+      httpParams = httpParams.set('limit', params.limit);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http
+      .get<ListCasesResponseDto>(joinUrl(this.apiBaseUrl, 'cases'), { params: httpParams })
+      .pipe(
+        map((response) => ({
+          data: response.data.map(mapCaseDtoToModel),
+          meta: response.meta,
+        })),
+      );
+  }
 
   getCaseById(caseId: string): Observable<CaseModel> {
     return this.http
