@@ -27,6 +27,29 @@ export interface ListCasesResult {
   };
 }
 
+export interface CreateCaseCommand {
+  code: string;
+  title: string;
+  description?: string | null;
+  status?: CaseModel['status'];
+  openedAt?: Date;
+  closedAt?: Date | null;
+  clientId: string;
+  createdById?: string | null;
+}
+
+export interface UpdateCaseCommand {
+  caseId: string;
+  code?: string;
+  title?: string;
+  description?: string | null;
+  status?: CaseModel['status'];
+  openedAt?: Date;
+  closedAt?: Date | null;
+  clientId?: string;
+  createdById?: string | null;
+}
+
 export interface ListCaseFilesResult {
   data: CaseFileModel[];
   meta: {
@@ -51,6 +74,9 @@ export interface UploadCaseFilesResult {
 
 export abstract class CasesRepository {
   abstract listCases(params: ListCasesParams): Observable<ListCasesResult>;
+  abstract createCase(command: CreateCaseCommand): Observable<CaseModel>;
+  abstract updateCase(command: UpdateCaseCommand): Observable<CaseModel>;
+  abstract deleteCase(caseId: string): Observable<void>;
   abstract getCaseById(caseId: string): Observable<CaseModel>;
   abstract listCaseFiles(params: ListCaseFilesParams): Observable<ListCaseFilesResult>;
   abstract uploadCaseFiles(command: UploadCaseFilesCommand): Observable<UploadCaseFilesResult>;

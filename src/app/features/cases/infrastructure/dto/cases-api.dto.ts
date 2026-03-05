@@ -12,6 +12,28 @@ export interface CaseResponseDto {
   updatedAt: string;
 }
 
+export interface CreateCaseRequestDto {
+  code: string;
+  title: string;
+  description?: string | null;
+  status?: 'OPEN' | 'IN_PROGRESS' | 'ON_HOLD' | 'CLOSED';
+  openedAt?: string;
+  closedAt?: string | null;
+  clientId: string;
+  createdById?: string | null;
+}
+
+export interface UpdateCaseRequestDto {
+  code?: string;
+  title?: string;
+  description?: string | null;
+  status?: 'OPEN' | 'IN_PROGRESS' | 'ON_HOLD' | 'CLOSED';
+  openedAt?: string;
+  closedAt?: string | null;
+  clientId?: string;
+  createdById?: string | null;
+}
+
 export interface ListCasesResponseDto {
   data: CaseResponseDto[];
   meta: {

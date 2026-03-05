@@ -1,4 +1,26 @@
 <main class="case-page mx-auto max-w-6xl space-y-5 p-4 sm:p-6">
+  <nav class="flex flex-wrap items-center gap-2">
+    <a
+      [routerLink]="['/']"
+      class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+      aria-label="Volver al listado de expedientes"
+    >
+      <span aria-hidden="true">←</span>
+      Volver a expedientes
+    </a>
+
+    @if (caseDetail(); as detail) {
+      <a
+        [routerLink]="['/']"
+        [queryParams]="{ edit: detail.id }"
+        fragment="crud-expedientes"
+        class="md-btn-secondary !px-4 !py-1.5 !text-xs"
+      >
+        Editar expediente
+      </a>
+    }
+  </nav>
+
   @if (caseLoading()) {
     <section class="md-card p-5 text-slate-600" role="status" aria-live="polite">Cargando expediente...</section>
   } @else if (caseError()) {

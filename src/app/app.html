@@ -1,1 +1,29 @@
-<router-outlet></router-outlet>
+<div class="min-h-screen">
+  <header class="border-b border-slate-200/80 bg-white/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+      <a [routerLink]="['/']" class="group inline-flex items-center gap-2">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">MD</span>
+        <div>
+          <p class="text-sm font-semibold leading-none text-slate-900 group-hover:text-sky-700">MiDespacho</p>
+          <p class="text-[11px] text-slate-500">Gestion de expedientes</p>
+        </div>
+      </a>
+
+      <nav class="flex items-center gap-2 text-xs sm:text-sm">
+        <a
+          [routerLink]="['/']"
+          class="rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100"
+          >Expedientes</a
+        >
+        <a
+          [routerLink]="['/']"
+          fragment="crud-expedientes"
+          class="rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100"
+          >CRUD</a
+        >
+      </nav>
+    </div>
+  </header>
+
+  <router-outlet></router-outlet>
+</div>

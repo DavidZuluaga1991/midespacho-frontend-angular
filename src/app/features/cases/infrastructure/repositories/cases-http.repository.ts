@@ -3,16 +3,25 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import {
   CasesRepository,
+  CreateCaseCommand,
   ListCasesParams,
   ListCasesResult,
   ListCaseFilesParams,
   ListCaseFilesResult,
+  UpdateCaseCommand,
   UploadCaseFilesCommand,
   UploadCaseFilesResult,
 } from '../../application/ports/cases.repository';
 import { CaseModel } from '../../domain/models/case.model';
 import { API_BASE_URL } from '../../../../core/config/api-base-url.token';
-import { CaseResponseDto, ListCaseFilesResponseDto, ListCasesResponseDto, UploadCaseFilesResponseDto } from '../dto/cases-api.dto';
+import {
+  CaseResponseDto,
+  CreateCaseRequestDto,
+  ListCaseFilesResponseDto,
+  ListCasesResponseDto,
+  UpdateCaseRequestDto,
+  UploadCaseFilesResponseDto,
+} from '../dto/cases-api.dto';
 import { mapCaseDtoToModel, mapCaseFileDtoToModel, mapFileBatchDtoToModel } from '../mappers/cases.mapper';
 
 const joinUrl = (base: string, path: string): string => `${base.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
@@ -42,6 +51,59 @@ export class CasesHttpRepository implements CasesRepository {
           meta: response.meta,
         })),
       );
+  }
+
+  createCase(command: CreateCaseCommand): Observable<CaseModel> {
+    const payload: CreateCaseRequestDto = {
+      code: command.code,
+      title: command.title,
+      description: command.description ?? null,
+      status: command.status,
+      openedAt: command.openedAt?.toISOString(),
+      closedAt:
+        command.closedAt === undefined
+          ? undefined
+          : command.closedAt === null
+            ? null
+            : command.closedAt.toISOString(),
+      clientId: command.clientId,
+      createdById:
+        command.createdById === undefined ? undefined : command.createdById,
+    };
+
+    return this.http
+      .post<CaseResponseDto>(joinUrl(this.apiBaseUrl, 'cases'), payload)
+      .pipe(map((dto) => mapCaseDtoToModel(dto)));
+  }
+
+  updateCase(command: UpdateCaseCommand): Observable<CaseModel> {
+    const payload: UpdateCaseRequestDto = {
+      code: command.code,
+      title: command.title,
+      description: command.description,
+      status: command.status,
+      openedAt: command.openedAt?.toISOString(),
+      closedAt:
+        command.closedAt === undefined
+          ? undefined
+          : command.closedAt === null
+            ? null
+            : command.closedAt.toISOString(),
+      clientId: command.clientId,
+      createdById:
+        command.createdById === undefined ? undefined : command.createdById,
+    };
+
+    return this.http
+      .patch<CaseResponseDto>(
+        joinUrl(this.apiBaseUrl, `cases/${command.caseId}`),
+        payload,
+      )
+      .pipe(map((dto) => mapCaseDtoToModel(dto)));
+  }
+
+  deleteCase(caseId: string): Observable<void> {
+    return this.http.delete<void>(joinUrl(this.apiBaseUrl, `cases/${caseId}`));
   }
 
   getCaseById(caseId: string): Observable<CaseModel> {
