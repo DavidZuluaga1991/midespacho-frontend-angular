@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CaseFileModel } from '../../../domain/models/case-file.model';
 
 @Component({
@@ -14,6 +14,11 @@ export class FilesListComponent {
   @Input() files: CaseFileModel[] = [];
   @Input() loading = false;
   @Input() error: string | null = null;
+  @Input() page = 1;
+  @Input() limit = 20;
+  @Input() total = 0;
+  @Input() hasNext = false;
+  @Output() pageChange = new EventEmitter<number>();
 
   protected formatFileSize(sizeBytes: string): string {
     const bytes = Number(sizeBytes);
@@ -47,5 +52,19 @@ export class FilesListComponent {
       return 'IMG';
     }
     return 'FILE';
+  }
+
+  protected onPrevPage(): void {
+    if (this.loading || this.page <= 1) {
+      return;
+    }
+    this.pageChange.emit(this.page - 1);
+  }
+
+  protected onNextPage(): void {
+    if (this.loading || !this.hasNext) {
+      return;
+    }
+    this.pageChange.emit(this.page + 1);
   }
 }

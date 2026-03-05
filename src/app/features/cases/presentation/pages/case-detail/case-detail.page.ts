@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CaseModel } from '../../../domain/models/case.model';
@@ -7,6 +8,7 @@ import { LoadCaseDetailUseCase } from '../../../application/use-cases/load-case-
 import { CaseFileModel } from '../../../domain/models/case-file.model';
 import { ListCaseFilesUseCase } from '../../../application/use-cases/list-case-files.use-case';
 import { UploadCaseFilesUseCase } from '../../../application/use-cases/upload-case-files.use-case';
+import { ListCaseFilesResult } from '../../../application/ports/cases.repository';
 import { CaseHeaderComponent } from '../../components/case-header/case-header.component';
 import { UploadBatchFormComponent, UploadBatchFormSubmitEvent } from '../../components/upload-batch-form/upload-batch-form.component';
 import { FilesListComponent } from '../../components/files-list/files-list.component';
@@ -32,6 +34,12 @@ export class CaseDetailPage {
   protected readonly filesLoading = signal<boolean>(true);
   protected readonly filesError = signal<string | null>(null);
   protected readonly files = signal<CaseFileModel[]>([]);
+  protected readonly filesMeta = signal<ListCaseFilesResult['meta']>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    hasNext: false,
+  });
   protected readonly uploading = signal<boolean>(false);
   protected readonly uploadSuccessMessage = signal<string | null>(null);
   protected readonly uploadErrorMessage = signal<string | null>(null);
@@ -57,8 +65,14 @@ export class CaseDetailPage {
           this.currentCaseId.set(caseId);
           this.uploadSuccessMessage.set(null);
           this.uploadErrorMessage.set(null);
+          this.filesMeta.set({
+            page: 1,
+            limit: this.filesMeta().limit,
+            total: 0,
+            hasNext: false,
+          });
           this.loadCase(caseId);
-          this.loadFiles(caseId);
+          this.loadFiles(caseId, 1);
         },
       });
   }
@@ -86,13 +100,22 @@ export class CaseDetailPage {
           this.uploading.set(false);
           this.uploadSuccessMessage.set(`${result.files.length} archivo(s) cargado(s) correctamente.`);
           this.uploadFormResetKey.update((value) => value + 1);
-          this.loadFiles(caseId);
+          this.loadFiles(caseId, 1);
         },
-        error: () => {
+        error: (error: unknown) => {
           this.uploading.set(false);
-          this.uploadErrorMessage.set('No fue posible subir el lote. Verifica los datos e intenta nuevamente.');
+          this.uploadErrorMessage.set(this.resolveHttpErrorMessage(error, 'No fue posible subir el lote.'));
         },
       });
+  }
+
+  protected onFilesPageChange(page: number): void {
+    const caseId = this.currentCaseId();
+    if (!caseId) {
+      return;
+    }
+
+    this.loadFiles(caseId, page);
   }
 
   private loadCase(caseId: string): void {
@@ -106,32 +129,74 @@ export class CaseDetailPage {
           this.caseDetail.set(caseDetail);
           this.caseLoading.set(false);
         },
-        error: () => {
-          this.caseError.set('No fue posible cargar el expediente.');
+        error: (error: unknown) => {
+          this.caseError.set(this.resolveHttpErrorMessage(error, 'No fue posible cargar el expediente.'));
           this.caseLoading.set(false);
         },
       });
   }
 
-  private loadFiles(caseId: string): void {
+  private loadFiles(caseId: string, page: number): void {
     this.filesLoading.set(true);
     this.filesError.set(null);
     this.listCaseFilesUseCase
       .execute({
         caseId,
-        page: 1,
-        limit: 50,
+        page,
+        limit: this.filesMeta().limit,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
           this.files.set(result.data);
+          this.filesMeta.set(result.meta);
           this.filesLoading.set(false);
         },
-        error: () => {
-          this.filesError.set('No fue posible obtener el listado de archivos.');
+        error: (error: unknown) => {
+          this.filesError.set(this.resolveHttpErrorMessage(error, 'No fue posible obtener el listado de archivos.'));
           this.filesLoading.set(false);
         },
       });
+  }
+
+  private resolveHttpErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    if (error.status === 0) {
+      return 'No hay conexion con el servidor.';
+    }
+
+    if (error.status === 401 || error.status === 403) {
+      return 'No tienes permisos para realizar esta accion.';
+    }
+
+    if (error.status === 422) {
+      const payloadMessage = this.extractPayloadMessage(error.error);
+      return payloadMessage ?? 'Los datos enviados no cumplen las validaciones.';
+    }
+
+    if (error.status >= 500) {
+      return 'El servidor presento un error interno. Intenta nuevamente.';
+    }
+
+    return this.extractPayloadMessage(error.error) ?? fallback;
+  }
+
+  private extractPayloadMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+
+    const message = (payload as { message?: unknown }).message;
+    if (Array.isArray(message)) {
+      return message.filter((item): item is string => typeof item === 'string').join('. ');
+    }
+    if (typeof message === 'string') {
+      return message;
+    }
+
+    return null;
   }
 }

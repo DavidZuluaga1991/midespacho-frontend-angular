@@ -34,7 +34,16 @@
         }
       </div>
 
-      <app-files-list [files]="files()" [loading]="filesLoading()" [error]="filesError()" />
+      <app-files-list
+        [files]="files()"
+        [loading]="filesLoading()"
+        [error]="filesError()"
+        [page]="filesMeta().page"
+        [limit]="filesMeta().limit"
+        [total]="filesMeta().total"
+        [hasNext]="filesMeta().hasNext"
+        (pageChange)="onFilesPageChange($event)"
+      />
     </section>
   }
 </main>
