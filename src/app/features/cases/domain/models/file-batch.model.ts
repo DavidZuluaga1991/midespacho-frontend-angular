@@ -1,0 +1,9 @@
+export interface FileBatchModel {
+  id: string;
+  caseId: string;
+  title: string;
+  description: string;
+  uploadedById: string | null;
+  createdAt: Date;
+}
+
