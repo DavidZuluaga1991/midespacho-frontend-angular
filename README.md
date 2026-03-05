@@ -1,59 +1,107 @@
-# MidespachoFrontendAngular
+# MiDespacho Frontend (Angular SSR + TailwindCSS)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.5.
+Frontend SSR del modulo de expediente juridico para la prueba tecnica de MiDespacho.
 
-## Development server
+## Objetivo del modulo
+Vista de administracion de expediente enfocada en:
+- Contexto del expediente (cliente, estado, fechas, codigo).
+- Carga multiple de archivos por lote (`batchTitle` + `batchDescription`).
+- Listado de archivos del expediente con estados de UI y paginacion.
 
-To start a local development server, run:
+No incluye visor de documentos.
 
-```bash
-ng serve
+## Stack
+- Angular 20 (standalone + SSR)
+- TailwindCSS 3
+- RxJS
+- SCSS
+
+## Arquitectura
+Feature `cases` organizada por capas:
+- `src/app/features/cases/domain`: modelos de dominio.
+- `src/app/features/cases/application`: puertos y casos de uso.
+- `src/app/features/cases/infrastructure`: repositorio HTTP, DTOs y mappers.
+- `src/app/features/cases/presentation`: pagina y componentes UI.
+
+Elementos transversales:
+- `src/app/core/http/with-credentials.interceptor.ts`
+- `src/app/core/config/api-base-url.token.ts`
+
+## Requisitos
+- Node.js 22+
+- npm 10+
+- Backend corriendo en `http://localhost:3000`
+
+## Configuracion de entorno
+Archivo usado en desarrollo:
+
+`midespacho-frontend-angular/.env.development`
+
+```env
+API_BASE_URL=http://localhost:3000/api/v1
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Resolucion de `API_BASE_URL`:
+1. `process.env.API_BASE_URL`
+2. `<meta name="api-base-url" ...>`
+3. `globalThis.__env.API_BASE_URL`
+4. fallback `'/api/v1'`
 
-## Code scaffolding
+En SSR server-side, fallback:
+- `http://localhost:3000/api/v1`
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+## Instalacion
+```powershell
+cd E:\Entrevista\MiDespacho\midespacho-frontend-angular
+npm.cmd install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
+## Ejecutar proyecto
+```powershell
+# SSR en desarrollo
+npm.cmd run dev:ssr
 ```
 
-## Building
+URL local:
+- `http://localhost:4000`
 
-To build the project run:
+Rutas principales:
+- `/` (home)
+- `/app/cases/:id` (detalle de expediente)
 
-```bash
-ng build
+## Build SSR
+```powershell
+npm.cmd run build
+npm.cmd run start:ssr
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Integracion con backend
+El frontend consume:
+- `GET /cases/:id`
+- `GET /cases/:id/files`
+- `POST /cases/:id/files`
 
-## Running unit tests
+Flujo esperado:
+1. Entra a `/app/cases/:id`.
+2. Carga detalle + archivos (pagina 1).
+3. Usuario sube lote de archivos.
+4. Al exito, refresca listado automaticamente.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Calidad y pruebas
+```powershell
+# build SSR
+npm.cmd run build
 
-```bash
-ng test
+# unit/component/integration tests frontend
+npm.cmd run test -- --watch=false --browsers=ChromeHeadless
 ```
 
-## Running end-to-end tests
+Nota:
+- El proyecto no define script `lint` en `package.json`; la validacion automatizada actual del frontend se basa en build + tests.
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## UX y accesibilidad
+- Diseno mobile-first.
+- Estados de pantalla: loading, empty, success, error.
+- `aria-live` para mensajes de feedback.
+- Navegacion por teclado y focus-visible.
+- Drag and drop accesible en formulario de carga.
