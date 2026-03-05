@@ -65,6 +65,13 @@ export class UploadBatchFormComponent implements OnChanges {
     this.applySelectedFiles(files, true);
   }
 
+  protected openFileDialog(input: HTMLInputElement): void {
+    if (this.disabled || this.uploading) {
+      return;
+    }
+    input.click();
+  }
+
   protected removeFile(index: number): void {
     const current = this.selectedFiles();
     const next = current.filter((_, fileIndex) => fileIndex !== index);

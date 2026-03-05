@@ -1,10 +1,10 @@
 <main class="case-page mx-auto max-w-6xl space-y-5 p-4 sm:p-6">
   @if (caseLoading()) {
-    <section class="rounded-2xl border border-slate-200 bg-white p-5 text-slate-600">Cargando expediente...</section>
+    <section class="md-card p-5 text-slate-600" role="status" aria-live="polite">Cargando expediente...</section>
   } @else if (caseError()) {
-    <section class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700">
+    <section class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700" role="alert" aria-live="assertive">
       <p>{{ caseError() }}</p>
-      <a class="mt-2 inline-block text-sm underline" [routerLink]="['/']">Volver al inicio</a>
+      <a class="mt-2 inline-block text-sm underline focus-visible:rounded-sm" [routerLink]="['/']">Volver al inicio</a>
     </section>
   } @else if (caseDetail(); as detail) {
     <app-case-header
@@ -23,12 +23,12 @@
         />
 
         @if (uploadSuccessMessage()) {
-          <p class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" aria-live="polite">
+          <p class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" role="status" aria-live="polite">
             {{ uploadSuccessMessage() }}
           </p>
         }
         @if (uploadErrorMessage()) {
-          <p class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700" aria-live="polite">
+          <p class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert" aria-live="assertive">
             {{ uploadErrorMessage() }}
           </p>
         }
